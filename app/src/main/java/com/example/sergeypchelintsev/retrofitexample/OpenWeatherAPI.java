@@ -11,6 +11,7 @@ import retrofit2.http.Query;
 
 public interface OpenWeatherAPI {
 
-    @GET("/data/2.5/forecast?appid=f4540f77f79170327fc25b3039261c45")
+   // @GET("/data/2.5/forecast?appid=f4540f77f79170327fc25b3039261c45")
+    @GET("/data/2.5/forecast?lang=ru&units=metric&appid=f4540f77f79170327fc25b3039261c45")
     Call<WeatherResponse> getCity(@Query("id") String city_ID);
 }

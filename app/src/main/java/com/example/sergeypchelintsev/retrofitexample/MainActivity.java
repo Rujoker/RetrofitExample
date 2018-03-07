@@ -2,7 +2,11 @@ package com.example.sergeypchelintsev.retrofitexample;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -19,7 +23,6 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-import static okhttp3.logging.HttpLoggingInterceptor.Level.BODY;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -32,20 +35,27 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.today)
     TextView today;
 
-    private String BASE_URL = "http://samples.openweathermap.org";
+    private RecyclerView mRecyclerView;
+    private RecyclerView.Adapter mAdapter;
+    private RecyclerView.LayoutManager mLayoutManager;
+
+    private String BASE_URL = "http://api.openweathermap.org";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         ButterKnife.bind(this);
-
-
     }
 
     @OnClick (R.id.button)
     public void onClick(View view) {
+
+        mRecyclerView = findViewById(R.id.my_recycler_view);
+        mRecyclerView.setHasFixedSize(true);
+
+        mLayoutManager = new LinearLayoutManager(this);
+        mRecyclerView.setLayoutManager(mLayoutManager);
 
         OkHttpClient okHttpClient = new OkHttpClient.Builder()
                 .addInterceptor(new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
@@ -65,31 +75,20 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
                 Toast.makeText(MainActivity.this, String.valueOf(response.code()), Toast.LENGTH_SHORT).show();
                 if (response.isSuccessful()) {
-                    // request successful (status code 200, 201)
                     WeatherResponse result = response.body();
 
-                    String sum;
-                    String str;
-                    str = "";
-                    sum = "City: " + result.getCity().getName() + ", Country: " + result.getCity().getCountry();
-                    for (int i = 0; i < 1; i++) {
-                        str = "Time: " + result.getList().get(i).getDtTxt() +
-                                ", Description: " + result.getList().get(i).getWeather().get(0).getDescription() +
-                                ", Temp: " + result.getList().get(i).getMain().getTemp() +
-                                ", Maximal: " + result.getList().get(i).getMain().getTempMax() +
-                                ", Minimal: " + result.getList().get(i).getMain().getTempMin() +
-                                ", Pressure: " + result.getList().get(i).getMain().getPressure();
-                    }
+                    mAdapter = new MyAdapter(result);
+                    mRecyclerView.setAdapter(mAdapter);
 
-                    summary.setText(sum);
-                    today.setText(str);
+                    summary.setText(String.valueOf("Город: " + result.getCity().getName() +
+                            ", Страна: " + result.getCity().getCountry()));
+                    today.setText(String.valueOf("Сейчас: " + result.getList().get(0).getWeather().get(0).getDescription() +
+                            ", Температура: " + result.getList().get(0).getMain().getTemp()));
 
                 } else {
-                    //request not successful (like 400,401,403 etc)
-                    //Handle errors
+
                 }
             }
-
 
             @Override
             public void onFailure(Call<WeatherResponse> call, Throwable t) {
