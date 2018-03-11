@@ -1,11 +1,14 @@
 package com.example.sergeypchelintsev.retrofitexample;
 
+import android.graphics.BitmapFactory;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import java.net.URL;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -46,17 +49,24 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        List data = mDataset.getList().get(position);
-        holder.mTextViewTime.setText(data.getDtTxt());
-        holder.mTextViewTemp.setText(String.valueOf(data.getMain().getTemp()));
-        holder.mTextViewPressure.setText(String.valueOf(data.getMain().getPressure().toString()));
-        holder.mTextViewWind.setText(String.valueOf(data.getWind().getSpeed()));
-        holder.mTextViewDescription.setText(data.getWeather().get(0).getDescription());
+
+            List data = mDataset.getList().get(position);
+            holder.mTextViewTime.setText(data.getDtTxt());
+            holder.mTextViewTemp.setText(String.valueOf(data.getMain().getTemp()));
+            holder.mTextViewPressure.setText(String.valueOf(data.getMain().getPressure().toString()));
+            holder.mTextViewWind.setText(String.valueOf(data.getWind().getSpeed()));
+            holder.mTextViewDescription.setText(data.getWeather().get(0).getDescription());
+
+  //      Picasso.with(context).load("http://openweathermap.org/img/w/" + data.getWeather().get(0).getIcon()).into(mIcon);
+
+//        URL newurl = new URL("http://i.imgur.com/DvpvklR.png");
+//        mIcon_val = BitmapFactory.decodeStream(newurl.openConnection() .getInputStream());
+//        profile_photo.setImageBitmap(mIcon_val);
     }
 
     @Override
     public int getItemCount() {
-        return mDataset.getCnt();
+        return 5; //mDataset.getCnt();
     }
 }
 
