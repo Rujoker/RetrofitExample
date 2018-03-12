@@ -1,16 +1,19 @@
-package com.example.sergeypchelintsev.retrofitexample;
+package com.example.sergeypchelintsev.retrofitexample.views;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.sergeypchelintsev.retrofitexample.MyAdapter;
+import com.example.sergeypchelintsev.retrofitexample.OpenWeatherAPI;
+import com.example.sergeypchelintsev.retrofitexample.R;
+import com.example.sergeypchelintsev.retrofitexample.perThree.WeatherResponse;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -25,6 +28,9 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 
 public class MainActivity extends AppCompatActivity {
+
+    public String cityId;
+
 
     @BindView(R.id.button)
     Button button;
@@ -68,7 +74,9 @@ public class MainActivity extends AppCompatActivity {
                 .build();
 
         OpenWeatherAPI service = client.create(OpenWeatherAPI.class);
-        Call<WeatherResponse> call = service.getCity(city.getText().toString());
+
+        cityId = city.getText().toString();
+        Call<WeatherResponse> call = service.getCity(cityId);
 
         call.enqueue(new Callback<WeatherResponse>() {
             @Override
@@ -77,14 +85,13 @@ public class MainActivity extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     WeatherResponse result = response.body();
 
-                    mAdapter = new MyAdapter(result);
+                    mAdapter = new MyAdapter(result, MainActivity.this);
                     mRecyclerView.setAdapter(mAdapter);
 
                     summary.setText(String.valueOf("Город: " + result.getCity().getName() +
                             ", Страна: " + result.getCity().getCountry()));
                     today.setText(String.valueOf("Сейчас: " + result.getList().get(0).getWeather().get(0).getDescription() +
                             ", Температура: " + result.getList().get(0).getMain().getTemp()));
-
                 } else {
 
                 }
@@ -97,5 +104,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+
+//    public void ClickTable(View view) {
+//        Intent intent = new Intent(MainActivity.this, DetailedActivity.class);
+//        startActivity(intent);
+//    }
+
+
+
+
+
 }
 

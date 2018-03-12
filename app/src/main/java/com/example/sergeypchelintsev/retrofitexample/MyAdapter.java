@@ -1,6 +1,7 @@
 package com.example.sergeypchelintsev.retrofitexample;
 
-import android.graphics.BitmapFactory;
+import android.content.Context;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,7 +9,10 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.net.URL;
+import com.example.sergeypchelintsev.retrofitexample.perThree.WeatherData;
+import com.example.sergeypchelintsev.retrofitexample.perThree.WeatherResponse;
+import com.example.sergeypchelintsev.retrofitexample.views.DetailedActivity;
+import com.squareup.picasso.Picasso;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -19,25 +23,37 @@ import butterknife.ButterKnife;
 
 public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
+    private final Context mContext;
     private WeatherResponse mDataset;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
-        @BindView(R.id.Temperature) TextView mTextViewTemp;
-        @BindView(R.id.Time) TextView mTextViewTime;
-        @BindView(R.id.Pressure) TextView mTextViewPressure;
-        @BindView(R.id.Wind) TextView mTextViewWind;
-        @BindView(R.id.Description) TextView mTextViewDescription;
-        @BindView(R.id.icon) ImageView mIcon;
+        @BindView(R.id.Temperature)
+        TextView mTextViewTemp;
+        @BindView(R.id.Time)
+        TextView mTextViewTime;
+        @BindView(R.id.Pressure)
+        TextView mTextViewPressure;
+        @BindView(R.id.Wind)
+        TextView mTextViewWind;
+        @BindView(R.id.Description)
+        TextView mTextViewDescription;
+        @BindView(R.id.icon)
+        ImageView mIcon;
 
-        public ViewHolder(View v) {
-            super(v);
-            ButterKnife.bind(this, v);
+        private View root;
+
+        ViewHolder(View view) {
+            super(view);
+            root = view;
+            ButterKnife.bind(this, view);
         }
     }
 
-    public MyAdapter(WeatherResponse myDataset) {
+    public MyAdapter(WeatherResponse myDataset, Context context) {
         mDataset = myDataset;
+        mContext = context;
+
     }
 
     @Override
@@ -50,23 +66,39 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
 
-            List data = mDataset.getList().get(position);
-            holder.mTextViewTime.setText(data.getDtTxt());
-            holder.mTextViewTemp.setText(String.valueOf(data.getMain().getTemp()));
-            holder.mTextViewPressure.setText(String.valueOf(data.getMain().getPressure().toString()));
-            holder.mTextViewWind.setText(String.valueOf(data.getWind().getSpeed()));
-            holder.mTextViewDescription.setText(data.getWeather().get(0).getDescription());
+        WeatherData data = mDataset.getList().get(position);
+        holder.mTextViewTime.setText(data.getDtTxt());
+        holder.mTextViewTemp.setText(String.valueOf(data.getMain().getTemp()));
+        holder.mTextViewPressure.setText(String.valueOf(data.getMain().getPressure().toString()));
+        holder.mTextViewWind.setText(String.valueOf(data.getWind().getSpeed()));
+        holder.mTextViewDescription.setText(data.getWeather().get(0).getDescription());
 
-  //      Picasso.with(context).load("http://openweathermap.org/img/w/" + data.getWeather().get(0).getIcon()).into(mIcon);
+        holder.root.setOnClickListener(v-> onClickItem(v, data));
+        Picasso.with(mContext)
+                .load("http://openweathermap.org/img/w/" + data.getWeather().get(0).getIcon() + ".png")
+                .into(holder.mIcon);
 
-//        URL newurl = new URL("http://i.imgur.com/DvpvklR.png");
-//        mIcon_val = BitmapFactory.decodeStream(newurl.openConnection() .getInputStream());
-//        profile_photo.setImageBitmap(mIcon_val);
     }
+
 
     @Override
     public int getItemCount() {
-        return 5; //mDataset.getCnt();
+        return mDataset.getCnt();
+    }
+
+    private void onClickItem(View view, WeatherData weatherData) {
+//        List<WeatherData> weatherOfDay = Stream.of(mDataset.getList()).filter(weather -> {
+//            return weather.getDt() >= startDay && weather.getDt() <= endDay;
+//        }).toList();
+
+        if (mContext != null) {
+            Intent intent = new Intent(mContext, DetailedActivity.class);
+            intent.putExtra(DetailedActivity.EXTERNAL_DATE, weatherData.getDt());
+            mContext.startActivity(intent);
+
+
+
+        }
     }
 }
 

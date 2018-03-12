@@ -1,10 +1,10 @@
 
-package com.example.sergeypchelintsev.retrofitexample;
+package com.example.sergeypchelintsev.retrofitexample.perThree;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class List {
+public class WeatherData {
 
     @SerializedName("dt")
     @Expose
