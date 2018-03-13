@@ -44,6 +44,15 @@ public class WeatherResponse {
         return list == null ? Collections.emptyList() : list;
     }
 
+    @NonNull
+    public void setList(List<WeatherData> list) {
+        if (list != null) this.list = list;
+    }
+
+    public void setCnt(Integer cnt) {
+        this.cnt = cnt;
+    }
+
 
     public City getCity() {
         return city;

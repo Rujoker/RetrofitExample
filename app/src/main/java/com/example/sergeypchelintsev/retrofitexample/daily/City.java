@@ -1,5 +1,5 @@
 
-package com.example.sergeypchelintsev.retrofitexample.perThree;
+package com.example.sergeypchelintsev.retrofitexample.daily;
 
 import com.google.gson.annotations.SerializedName;
 
