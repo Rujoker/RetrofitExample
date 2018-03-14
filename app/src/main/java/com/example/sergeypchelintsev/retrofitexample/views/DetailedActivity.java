@@ -60,39 +60,37 @@ public class DetailedActivity extends AppCompatActivity {
 
         NetworkManager.getInstance().openWeatherAPI().getCity(cityName)
                 .enqueue(new Callback<WeatherResponse>() {
-            @Override
-            public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
-                if (response.isSuccessful()) {
-                    WeatherResponse result = response.body();
-                    WeatherResponse newResult = result;
+                    @Override
+                    public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
+                        if (response.isSuccessful()) {
+                            WeatherResponse result = response.body();
+                            WeatherResponse newResult = result;
 
-                    long startDay = dayTime - 43200;
-                    long endDay = startDay + 86400; //msec
+                            long startDay = dayTime - 43200;
+                            long endDay = startDay + 86400; //msec
 
-                    java.util.List<WeatherData> weatherOfDay = Stream.of(result.getList()).filter(weather -> {
-                        return (weather.getDt() > startDay && weather.getDt() <= endDay);
-                    }).toList();
+                            java.util.List<WeatherData> weatherOfDay = Stream.of(result.getList()).filter(weather -> {
+                                return (weather.getDt() > startDay && weather.getDt() <= endDay);
+                            }).toList();
 
-                    newResult.setList(weatherOfDay);
-                    newResult.setCnt(weatherOfDay.size());
-
-
+                            newResult.setList(weatherOfDay);
+                            newResult.setCnt(weatherOfDay.size());
 
 
-                    mAdapter.setList(result.getList());
 
 
-                }
-            }
+                            mAdapter.setList(result.getList());
 
-            @Override
-            public void onFailure(Call<WeatherResponse> call, Throwable t) {
-                Toast.makeText(DetailedActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<WeatherResponse> call, Throwable t) {
+                        Toast.makeText(DetailedActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
 
 }
-
-

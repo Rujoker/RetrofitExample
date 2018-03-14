@@ -115,12 +115,13 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     public void onBindViewHolder(ViewHolder holder, int position) {
 
         if (mType == WeatherType.CITY) {
-            WeatherData data = mDataset.getList().get(position);
+            WeatherData data = (WeatherData) mList.get(position);
+
             holder.mTextViewTime.setText(data.getDtTxt());
             holder.mTextViewTemp.setText(String.valueOf(data.getMain().getTemp()));
             holder.mTextViewPressure.setText(String.valueOf(data.getMain().getPressure().toString()));
             holder.mTextViewWind.setText(String.valueOf(data.getWind().getSpeed()));
-           // holder.mTextViewDescription.setText(data.getWeather().get(0).getDescription());
+            holder.mTextViewDescription.setText(data.getWeather().get(0).getDescription());
             Picasso.with(mContext)
                     .load("http://openweathermap.org/img/w/" + data.getWeather().get(0).getIcon() + ".png")
                     .into(holder.mIcon);
