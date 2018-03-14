@@ -12,28 +12,34 @@ import android.widget.Toast;
 
 import com.example.sergeypchelintsev.retrofitexample.MyAdapter;
 import com.example.sergeypchelintsev.retrofitexample.R;
+import com.example.sergeypchelintsev.retrofitexample.current.Current;
 import com.example.sergeypchelintsev.retrofitexample.daily.Daily;
 import com.example.sergeypchelintsev.retrofitexample.network.NetworkManager;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
 
 
 public class MainActivity extends AppCompatActivity {
 
-    @BindView(R.id.button) Button button;
-    @BindView(R.id.city) EditText city;
-    @BindView(R.id.summary) TextView summary;
-    @BindView(R.id.today) TextView today;
+    @BindView(R.id.button)
+    Button button;
+    @BindView(R.id.city)
+    EditText city;
+    @BindView(R.id.summary)
+    TextView summary;
+    @BindView(R.id.today)
+    TextView today;
 
-    @BindView(R.id.my_recycler_view) RecyclerView mRecyclerView;
+    @BindView(R.id.my_recycler_view)
+    RecyclerView mRecyclerView;
 
     private MyAdapter mAdapter;
-
+    private Subscription mSubscription;
+    private Subscription mSubscriptionCurDay;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,32 +54,58 @@ public class MainActivity extends AppCompatActivity {
         mAdapter = new MyAdapter(this);
         mAdapter.setWeatherType(MyAdapter.WeatherType.DAILY);
         mRecyclerView.setAdapter(mAdapter);
+
+        updateWeather();
     }
 
     @OnClick(R.id.button)
     public void onClick(View view) {
+        updateWeather();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unsubscribeAll();
+    }
+
+    private void unsubscribeAll() {
+        if (mSubscription != null) mSubscription.unsubscribe();
+        if (mSubscriptionCurDay != null) mSubscriptionCurDay.unsubscribe();
+    }
+
+    private void updateWeather() {
         String cityName = city.getText().toString();
-        NetworkManager.getInstance().openWeatherAPI().requestDaylyWeather(cityName)
-                .enqueue(new Callback<Daily>() {
-                    @Override
-                    public void onResponse(Call<Daily> call, Response<Daily> response) {
-                        if (response.isSuccessful()) {
-                            Daily result = response.body();
-                            summary.setText(String.valueOf("Город: " + result.getCity().getName() +
-                                    ", Страна: " + result.getCity().getCountry()));
-                            today.setText(String.valueOf("Сейчас: " + result.getList().get(0).getWeather().get(0).getDescription() +
-                                    ", Температура: " + result.getList().get(0).getTemp().getDay()));
+        if (cityName.isEmpty()) {
+            Toast.makeText(getApplicationContext(), "Введите город", Toast.LENGTH_LONG).show();
+            return;
+        }
 
-                            mAdapter.setList(result.getList());
-                            mAdapter.setCity(result.getCity().getName());
-                        }
-                    }
+        unsubscribeAll();
 
-                    @Override
-                    public void onFailure(Call<Daily> call, Throwable t) {
-                        Toast.makeText(MainActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
+        mSubscriptionCurDay = NetworkManager.getInstance().openWeatherAPI().getCurrentWeather(cityName)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe((Current current) -> {
+                    summary.setText(String.valueOf("Город: " + current.getName() +
+                            ", Страна: " + current.getSys().getCountry()));
+                    today.setText(String.valueOf("Сейчас: " + current.getWeather().get(0).getDescription() +
+                            ", Температура: " + current.getMain().getTemp()));
+                },
+                        exception -> {
+                            Toast.makeText(getApplicationContext(), exception.getMessage(), Toast.LENGTH_LONG)
+                                    .show();
+                        });
+
+        mSubscription = NetworkManager.getInstance().openWeatherAPI().requestDaylyWeather(cityName)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe((Daily daily) -> {
+                    mAdapter.setList(daily.getList());
+                    mAdapter.setCity(daily.getCity().getName());
+                },
+                        e -> {
+                            Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG)
+                                    .show();
+                        });
     }
 }
 
